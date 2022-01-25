@@ -21,8 +21,18 @@ const db = mysql.createConnection(
   console.log(`Connected to the election database.`)
 );
 
-db.query(`SELECT * FROM candidates`, (err, rows) => {
-  console.log(rows);
+// db object is using the query method to run the SQL query and executes
+// the callback with all the resulting rows that match the query
+// db.query(`SELECT * FROM candidates`, (err, rows) => {
+//   console.log(rows);
+// });
+
+// GET a single candidate
+db.query(`SELECT * FROM candidates WHERE id = 1`, (err, row) => {
+  if (err) {
+    console.log(err);
+  }
+  console.log(row);
 });
 
 // Default response for any other request (Not Found)
