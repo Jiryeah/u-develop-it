@@ -68,34 +68,6 @@ app.get(`/api/candidate/:id`, (req,res) => {
   });
 });
 
-// Query for Delete Operation
-//* '?' denotes a placeholder. This is now a 'prepared statement' which
-//* can execute the same SQL statements repeatedly using different
-//*  values in place of the placeholder.
-//* Another reason to use a placeholder in SQL query is to block
-//* a SQL injection attack, which replaces the clients user var
-//* & inserts alternate commands that could reveal or destroy the db.
-app.delete(`/api/candidate/:id`, (req, res) => {
-  const sql = `DELETE FROM candidates WHERE id = ?`;
-  const params = [req.params.id];
-
-  db.query(sql, params, (err, result) => {
-    if (err) {
-      res.statusMessage(400).json({ error: res.message });
-    } else if (!result.affectedRows) {
-      res.json({
-        message: `Candidate not found`
-      });
-    } else {
-      res.json({
-        message: `deleted`,
-        changes: result.affectedRows,
-        id: req.params.id
-      });
-    }
-  });
-});
-
 // Create a candidate
 //* post method used to insert candidate in candidates table.
 //* req.body object used to populate candidates data.
@@ -125,20 +97,119 @@ app.post(`/api/candidate`, ({ body }, res) => {
   });
 });
 
+// Update a candidate's party
+app.put('/api/candidate/:id', (req, res) => {
+  const errors = inputCheck(req.body, 'party_id');
 
-// Create a candidate
-//* four placeholders were used for the corresponding columns holding the values.
-// const sql = `INSERT INTO candidates (id, first_name, last_name, industry_connected)
-              // VALUES (?,?,?,?)`;
-//* four placeholders must match the four values in params, so we must use an array.
-// const params = [1, 'Ronald', 'Firbank', 1];
+  if (errors) {
+    res.status(400).json({ error: errors });
+    return;
+  }
+  
+  const sql = `UPDATE candidates SET party_id = ? 
+              WHERE id = ?`;
+  const params = [req.body.party_id, req.params.id];
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      // check if a record was found
+    } else if (!result.affectedRows) {
+      res.json({
+        message: 'Candidate not found'
+      });
+    } else {
+      res.json({
+        message: 'success',
+        data: req.body,
+        changes: result.affectedRows
+      });
+    }
+  });
+});
 
-// db.query(sql, params, (err, result) => {
-//   if (err) {
-//     console.log(err);
-//   }
-//   console.log(result);
-// });
+// Query for Delete Operation
+//* '?' denotes a placeholder. This is now a 'prepared statement' which
+//* can execute the same SQL statements repeatedly using different
+//*  values in place of the placeholder.
+//* Another reason to use a placeholder in SQL query is to block
+//* a SQL injection attack, which replaces the clients user var
+//* & inserts alternate commands that could reveal or destroy the db.
+app.delete(`/api/candidate/:id`, (req, res) => {
+  const sql = `DELETE FROM candidates WHERE id = ?`;
+  const params = [req.params.id];
+
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      res.statusMessage(400).json({ error: res.message });
+    } else if (!result.affectedRows) {
+      res.json({
+        message: `Candidate not found`
+      });
+    } else {
+      res.json({
+        message: `deleted`,
+        changes: result.affectedRows,
+        id: req.params.id
+      });
+    }
+  });
+});
+
+
+// Route for parties
+app.get('/api/parties', (req, res) => {
+  const sql = `SELECT * FROM parties`;
+  db.query(sql, (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: 'success',
+      data: rows
+    });
+  });
+});
+
+// Route for parties based on ID's
+app.get('/api/party/:id', (req, res) => {
+  const sql = `SELECT * FROM parties WHERE id = ?`;
+  const params = [req.params.id];
+  db.query(sql, params, (err, row) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: 'success',
+      data: row
+    });
+  });
+});
+
+// Delete route for parties
+app.delete('/api/party/:id', (req, res) => {
+  const sql = `DELETE FROM parties WHERE id = ?`;
+  const params = [req.params.id];
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      res.status(400).json({ error: res.message });
+      // checks if anything was deleted
+    } else if (!result.affectedRows) {
+      res.json({
+        message: 'Party not found'
+      });
+    } else {
+      res.json({
+        message: 'deleted',
+        changes: result.affectedRows,
+        id: req.params.id
+      });
+    }
+  });
+});
+
+
 
 // Default response for any other request (Not Found)
 app.use((req, res) => {
@@ -148,3 +219,6 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+
+//* GET is for reading, POST for creating, and DELETE for deleting endpoints.
