@@ -18,3 +18,4 @@ VALUES
   ('Unica', 'Zurn', NULL, 1);
 
 
+-- source/db/seeds.sql to execute this script into db
