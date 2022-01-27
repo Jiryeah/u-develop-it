@@ -4,6 +4,7 @@
 -- to the foreign key constraint that requires the parties table to exist.
 DROP TABLE IF EXISTS candidates;  
 DROP TABLE IF EXISTS parties;
+DROP TABLE IF EXISTS voters;
 
 -- Because the Constraint relies on the parties table, the parties table
 -- MUST be defined first before the candidates table.
@@ -26,6 +27,14 @@ CREATE TABLE candidates (
   CONSTRAINT fk_party FOREIGN KEY (party_id) REFERENCES parties(id) ON DELETE SET NULL
 );
 
+  -- DEFAULT denotes that the current timestamp will be shown instead of 'null' since we didn't add 'not null'
+CREATE TABLE voters (
+  id INTEGER AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(30) NOT NULL,
+  last_name VARCHAR(30) NOT NULL,
+  email VARCHAR(50) NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
 -- AS keyword lets you define an alias for your data. Can be useful
 -- when joining tables that might have overlapping field names.

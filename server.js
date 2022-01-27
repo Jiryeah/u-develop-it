@@ -221,4 +221,4 @@ app.listen(PORT, () => {
 });
 
 
-//* GET is for reading, POST for creating, and DELETE for deleting endpoints.
+//* GET is for reading, POST for creating, PUT for updating, and DELETE for deleting endpoints.
