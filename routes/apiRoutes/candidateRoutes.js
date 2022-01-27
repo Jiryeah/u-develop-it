@@ -1,25 +1,14 @@
-//* Initializing express from npm i
-const express = require(`express`);
-//* Using MySql connection from the folder that exported it for global use.
-const db = require(`./db/connection`);
-//*Using the entire directory of apiRoutes will make the code default to using the 'index.js' file within said folder.
-const apiRoutes = require(`./routes/apiRoutes`);
+const express = require('express');
+const router = express.Router();
+const db = require('../../db/connection');
+const inputCheck = require('../../utils/inputCheck');
 
-const PORT = process.env.PORT || 3001;
-const app = express();
-const inputCheck = require(`./utils/inputCheck`)
-
-// Express middleware
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-
-app.use(`/api`,apiRoutes);
 
 //* db object is using the query method to run the SQL query and executes
 //* the callback with all the resulting rows that match the query
 //* also, the asterisk means 'all columns'.
 // Get all candidates
-app.get(`/api/candidates`, (req, res) => {
+router.get(`/candidates`, (req, res) => {
   const sql = `SELECT candidates.*, parties.name
               AS party_name
               FROM candidates
@@ -39,7 +28,7 @@ app.get(`/api/candidates`, (req, res) => {
 });
 
 // GET a single candidate
-app.get(`/api/candidate/:id`, (req,res) => {
+router.get(`/candidate/:id`, (req,res) => {
   const sql = `SELECT candidates.*, parties.name
               AS party_name
               FROM candidates
@@ -65,7 +54,7 @@ app.get(`/api/candidate/:id`, (req,res) => {
 //* post method used to insert candidate in candidates table.
 //* req.body object used to populate candidates data.
 //* object destructuring used to pull body property out of the request object.
-app.post(`/api/candidate`, ({ body }, res) => {
+router.post(`/candidate`, ({ body }, res) => {
   const errors = inputCheck(body, `first_name`, `last_name`, `industry_connected`)
   if (errors) {
     res.status(400).json({ error: errors});
@@ -91,7 +80,7 @@ app.post(`/api/candidate`, ({ body }, res) => {
 });
 
 // Update a candidate's party
-app.put('/api/candidate/:id', (req, res) => {
+router.put('/candidate/:id', (req, res) => {
   const errors = inputCheck(req.body, 'party_id');
 
   if (errors) {
@@ -127,7 +116,7 @@ app.put('/api/candidate/:id', (req, res) => {
 //* Another reason to use a placeholder in SQL query is to block
 //* a SQL injection attack, which replaces the clients user var
 //* & inserts alternate commands that could reveal or destroy the db.
-app.delete(`/api/candidate/:id`, (req, res) => {
+router.delete(`/candidate/:id`, (req, res) => {
   const sql = `DELETE FROM candidates WHERE id = ?`;
   const params = [req.params.id];
 
@@ -149,69 +138,4 @@ app.delete(`/api/candidate/:id`, (req, res) => {
 });
 
 
-// Route for parties
-app.get('/api/parties', (req, res) => {
-  const sql = `SELECT * FROM parties`;
-  db.query(sql, (err, rows) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json({
-      message: 'success',
-      data: rows
-    });
-  });
-});
-
-// Route for parties based on ID's
-app.get('/api/party/:id', (req, res) => {
-  const sql = `SELECT * FROM parties WHERE id = ?`;
-  const params = [req.params.id];
-  db.query(sql, params, (err, row) => {
-    if (err) {
-      res.status(400).json({ error: err.message });
-      return;
-    }
-    res.json({
-      message: 'success',
-      data: row
-    });
-  });
-});
-
-// Delete route for parties
-app.delete('/api/party/:id', (req, res) => {
-  const sql = `DELETE FROM parties WHERE id = ?`;
-  const params = [req.params.id];
-  db.query(sql, params, (err, result) => {
-    if (err) {
-      res.status(400).json({ error: res.message });
-      // checks if anything was deleted
-    } else if (!result.affectedRows) {
-      res.json({
-        message: 'Party not found'
-      });
-    } else {
-      res.json({
-        message: 'deleted',
-        changes: result.affectedRows,
-        id: req.params.id
-      });
-    }
-  });
-});
-
-
-
-// Default response for any other request (Not Found)
-app.use((req, res) => {
-  res.status(404).end();
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-
-//* GET is for reading, POST for creating, PUT for updating, and DELETE for deleting endpoints.
+module.exports = router;
