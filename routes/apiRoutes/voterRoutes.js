@@ -113,4 +113,4 @@ router.delete('/voter/:id', (req, res) => {
 
 module.exports = router;
 
-//* ORDER BY clause dictates sorted retrieval. DESC = Z to A or, as an example, by 'last_name' as well. 
+//* ORDER BY clause dictates sorted retrieval. DESC = Z to A, ASC = A to Z, or, as an example, by 'last_name' as well. 
